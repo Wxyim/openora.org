@@ -1,0 +1,25 @@
+---
+import SocialList from "@/components/SocialList.astro";
+import PageLayout from "@/layouts/Base.astro";
+
+const meta = {
+  description: "我是 Xaver，后端软件开发者，热爱编程和技术分享。",
+  title: "关于",
+};
+---
+
+<PageLayout meta={meta}>
+  <h1 class="title mb-6 font-normal">关于我</h1>
+  <div class="prose prose-sm prose-cactus max-w-none text-base">
+    <p>哈喽！我是 Xaver，从事后端软件开发工作，热爱编程和技术分享，欢迎一起探讨交流。</p>
+    <p>这是我的技能：</p>
+    <ul class="list-inside list-disc" role="list">
+      <li>Java EE、 Spring 系列</li>
+      <li>Python 上手</li>
+      <li>Rust 学习中</li>
+      <li>前端基础 HTML</li>
+      <li>...</li>
+    </ul>
+  </div>
+  <SocialList />
+</PageLayout>

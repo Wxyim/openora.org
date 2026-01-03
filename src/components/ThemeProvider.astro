@@ -1,0 +1,83 @@
+<script is:inline>
+  (function () {
+    const light_theme = "light";
+    const dark_theme = "dark_dimmed";
+
+    // Cookie 读写
+    function getUserPref() {
+      try {
+        const match = document.cookie.match(/(^|;\s*)theme=(light|dark)(;|$)/);
+        return match ? match[2] : null;
+      } catch {
+        return null;
+      }
+    }
+    function setUserPref(theme) {
+      try {
+        document.cookie = `theme=${theme}; path=/; max-age=31536000; SameSite=Lax`;
+      } catch {}
+    }
+
+    function getSystemTheme() {
+      return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    }
+
+    function setTheme(newTheme, persist = false) {
+      if (newTheme !== "light" && newTheme !== "dark") return;
+      const root = document.documentElement;
+      if (root.getAttribute("data-theme") === newTheme) return;
+      root.setAttribute("data-theme", newTheme);
+      if (persist) setUserPref(newTheme);
+    }
+
+    function updateGiscusTheme(themeOrUrl) {
+      const iframe = document.querySelector("iframe.giscus-frame");
+      if (!iframe) return;
+      let themeUrl = themeOrUrl.startsWith("http")
+        ? themeOrUrl
+        : themeOrUrl === "dark"
+          ? dark_theme
+          : light_theme;
+      iframe.contentWindow?.postMessage(
+        { giscus: { setConfig: { theme: themeUrl } } },
+        "https://giscus.app",
+      );
+    }
+
+    function getEffectiveTheme() {
+      return getUserPref() || getSystemTheme();
+    }
+
+    function applyTheme(theme, persist = false) {
+      setTheme(theme, persist);
+      updateGiscusTheme(theme);
+    }
+
+    // 初始化主题
+    const initialTheme = getEffectiveTheme();
+    applyTheme(initialTheme);
+
+    // 监听系统主题变化（用户无显式设置时切换）
+    window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", (e) => {
+      if (!getUserPref()) {
+        applyTheme(e.matches ? "light" : "dark");
+      }
+    });
+
+    // 监听自定义事件切换主题
+    document.addEventListener("theme-change", (e) => {
+      applyTheme(e.detail.theme, true);
+    });
+
+    // Astro 切换事件，重新应用主题
+    document.addEventListener("astro:after-swap", () => {
+      applyTheme(getEffectiveTheme());
+    });
+
+    // 暴露方法给外部脚本调用（如果需要）
+    window.themeUtils = {
+      getEffectiveTheme,
+      applyTheme,
+    };
+  })();
+</script>

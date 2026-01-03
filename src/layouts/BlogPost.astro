@@ -1,0 +1,267 @@
+---
+import { type CollectionEntry, render } from "astro:content";
+
+import Masthead from "@/components/blog/Masthead.astro";
+import TOC from "@/components/blog/TOC.astro";
+import WebMentions from "@/components/blog/webmentions/index.astro";
+
+import BaseLayout from "./Base.astro";
+
+interface Props {
+  post: CollectionEntry<"post">;
+}
+
+const { post } = Astro.props;
+const { ogImage, title, description, updatedDate, publishDate } = post.data;
+const socialImage = ogImage ?? `/og-image/${post.id}.png`;
+const articleDate = updatedDate?.toISOString() ?? publishDate.toISOString();
+const { headings, remarkPluginFrontmatter } = await render(post);
+const readingTime: string = remarkPluginFrontmatter.readingTime;
+---
+
+<BaseLayout
+  meta={{
+    articleDate,
+    description,
+    ogImage: socialImage,
+    title,
+  }}
+>
+  <article class="grow break-words" data-pagefind-body>
+    <div id="blog-hero" class="mb-12"><Masthead content={post} readingTime={readingTime} /></div>
+    <div class="flex min-w-0 flex-col gap-5 lg:flex-col lg:items-start">
+      {
+        !!headings.length && (
+          <div
+            id="main-toc"
+            class="bg-lighttoc dark:bg-darktoc font-toc w-full rounded-md p-4 text-gray-900"
+          >
+            <TOC headings={headings} />
+          </div>
+        )
+      }
+      <div
+        class="prose prose-xs prose-headings:relative prose-headings:font-normal prose-headings:text-accent-2 prose-headings:before:absolute prose-headings:before:-ms-4 sm:prose-headings:before:content-['#'] prose-headings:before:text-transparent prose-headings:hover:before:text-accent prose-headings:before:transition-colors sm:prose-th:before:content-none"
+      >
+        <slot />
+        <WebMentions />
+      </div>
+    </div>
+
+    <div class="mt-8" id="giscus-container"></div>
+    <script is:inline>
+      (function () {
+        const light_theme = "light";
+        const dark_theme = "dark_dimmed";
+
+        // 读取 Cookie 获取主题（同步第一个脚本的逻辑）
+        function getUserPref() {
+          try {
+            const match = document.cookie.match(/(^|;\s*)theme=(light|dark)(;|$)/);
+            return match ? match[2] : null;
+          } catch {
+            return null;
+          }
+        }
+
+        function getSystemTheme() {
+          return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+
+        function themeToUrl(theme) {
+          return theme === "dark" ? dark_theme : light_theme;
+        }
+
+        const userTheme = getUserPref();
+        const theme = userTheme || getSystemTheme();
+        const themeUrl = themeToUrl(theme);
+
+        const el = document.createElement("script");
+        el.src = "https://giscus.app/client.js";
+        el.setAttribute("data-repo", "Wxyim/comments");
+        el.setAttribute("data-repo-id", "R_kgDOPUd5qg");
+        el.setAttribute("data-category", "Announcements");
+        el.setAttribute("data-category-id", "DIC_kwDOPUd5qs4CthZE");
+        el.setAttribute("data-mapping", "pathname");
+        el.setAttribute("data-strict", "0");
+        el.setAttribute("data-reactions-enabled", "1");
+        el.setAttribute("data-emit-metadata", "0");
+        el.setAttribute("data-input-position", "top");
+        el.setAttribute("data-theme", themeUrl);
+        el.setAttribute("data-lang", "zh-CN");
+        el.setAttribute("data-loading", "lazy");
+        el.crossOrigin = "anonymous";
+        el.async = true;
+        document.getElementById("giscus-container").appendChild(el);
+      })();
+    </script>
+  </article>
+  <button
+    class="hover:border-link fixed end-4 bottom-8 z-90 flex h-10 w-10 translate-y-28 cursor-pointer items-center justify-center rounded-full border-2 border-transparent bg-zinc-200 text-3xl opacity-0 transition-all transition-discrete duration-300 data-[show=true]:translate-y-0 data-[show=true]:opacity-100 sm:end-8 sm:h-12 sm:w-12 dark:bg-zinc-700"
+    data-show="false"
+    id="to-top-btn"
+  >
+    <span class="sr-only">Back to top</span>
+    <svg
+      aria-hidden="true"
+      class="h-6 w-6"
+      fill="none"
+      focusable="false"
+      stroke="currentColor"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M4.5 15.75l7.5-7.5 7.5 7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+    </svg>
+  </button>
+
+  <!-- 浮动目录按钮 -->
+  <button
+    class="hover:border-link fixed end-4 bottom-20 z-90 flex h-10 w-10 translate-y-28 cursor-pointer items-center justify-center rounded-full border-2 border-transparent bg-zinc-200 text-3xl opacity-0 transition-all transition-discrete duration-300 data-[show=true]:translate-y-0 data-[show=true]:opacity-100 sm:end-8 sm:h-12 sm:w-12 dark:bg-zinc-700"
+    data-show="false"
+    id="floating-toc-btn"
+  >
+    <span class="sr-only">Show TOC</span>
+    <svg
+      aria-hidden="true"
+      class="h-6 w-6"
+      fill="none"
+      focusable="false"
+      stroke="currentColor"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round"></path>
+    </svg>
+  </button>
+
+  <!-- 浮动目录容器 -->
+  <div
+    id="floating-toc-container"
+    class="dark:bg-darktoc bg-lighttoc font-toc fixed end-4 bottom-32 z-100 hidden max-h-[70vh] overflow-y-auto rounded-md p-4 text-gray-900 dark:text-gray-100"
+  >
+    {!!headings.length && <TOC headings={headings} />}
+  </div>
+
+  <style>
+    /* 默认按钮底部距离 */
+    #to-top-btn {
+      bottom: 2rem;
+    }
+
+    #floating-toc-btn {
+      bottom: 6rem; /* 调整位置，避免重叠 */
+    }
+
+    #floating-toc-container {
+      bottom: 8rem;
+      width: 300px; /* 调整宽度 */
+    }
+
+    /* 屏幕宽度 <= 640px 时，调整 */
+    @media (max-width: 640px) {
+      #to-top-btn {
+        bottom: 2rem !important;
+        right: 1rem !important;
+      }
+
+      #floating-toc-btn {
+        bottom: 6rem !important;
+        right: 1rem !important;
+      }
+
+      #floating-toc-container {
+        right: 1rem;
+        bottom: 8rem;
+        width: calc(100vw - 2rem);
+      }
+    }
+  </style>
+</BaseLayout>
+
+<script>
+  const scrollBtn = document.getElementById("to-top-btn") as HTMLButtonElement;
+  const targetHeader = document.getElementById("blog-hero") as HTMLDivElement;
+
+  function headerCallback(entries: IntersectionObserverEntry[]) {
+    entries.forEach((entry) => {
+      scrollBtn.dataset.show = (!entry.isIntersecting).toString();
+    });
+  }
+
+  scrollBtn.addEventListener("click", () => {
+    document.documentElement.scrollTo({ behavior: "smooth", top: 0 });
+  });
+
+  const headerObserver = new IntersectionObserver(headerCallback, { threshold: 0 });
+  headerObserver.observe(targetHeader);
+
+  // 浮动目录逻辑
+  const floatingTocBtn = document.getElementById("floating-toc-btn") as HTMLButtonElement;
+  const floatingTocContainer = document.getElementById("floating-toc-container") as HTMLDivElement;
+  const mainToc = document.getElementById("main-toc") as HTMLDivElement;
+
+  if (mainToc) {
+    const tocCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) {
+          floatingTocBtn.dataset.show = "true";
+        } else {
+          floatingTocBtn.dataset.show = "false";
+          floatingTocContainer.classList.add("hidden"); // 关闭浮动目录当主目录可见时
+        }
+      });
+    };
+    const tocObserver = new IntersectionObserver(tocCallback, {
+      root: null, // viewport
+      rootMargin: "0px",
+      threshold: 0, // 任何部分可见时认为是可见
+    });
+    tocObserver.observe(mainToc);
+  }
+
+  floatingTocBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    floatingTocContainer.classList.toggle("hidden");
+  });
+
+  // 点击外部关闭
+  document.addEventListener("click", (e) => {
+    if (
+      !floatingTocContainer.contains(e.target as Node) &&
+      !floatingTocBtn.contains(e.target as Node)
+    ) {
+      floatingTocContainer.classList.add("hidden");
+    }
+  });
+
+  // 滚动外部关闭
+  document.addEventListener(
+    "wheel",
+    (e) => {
+      if (
+        !floatingTocContainer.contains(e.target as Node) &&
+        !floatingTocContainer.classList.contains("hidden")
+      ) {
+        floatingTocContainer.classList.add("hidden");
+      }
+    },
+    { passive: true },
+  );
+
+  // 移动端 touchmove
+  document.addEventListener(
+    "touchmove",
+    (e) => {
+      if (
+        !floatingTocContainer.contains(e.target as Node) &&
+        !floatingTocContainer.classList.contains("hidden")
+      ) {
+        floatingTocContainer.classList.add("hidden");
+      }
+    },
+    { passive: true },
+  );
+</script>
