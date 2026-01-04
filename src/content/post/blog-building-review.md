@@ -3,6 +3,7 @@ title: 博客搭建回顾
 description: 博客搭建回顾
 publishDate: "2025-08-25 18:00+0800"
 tags: ["blog", "website"]
+ogImage: "/social-card.png"
 draft: false
 ---
 ### 前言
