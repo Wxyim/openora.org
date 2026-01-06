@@ -4,7 +4,7 @@ description: 测试
 publishDate: "2025-07-30 15:15+0800"
 updatedDate: "2025-08-12 12:13+0800"
 tags: ["wellcome"]
-ogImage: "/social-card.png"
+ogImage: "https://res.openora.org/mysocial-card.png"
 draft: false
 ---
 
