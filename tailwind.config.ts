@@ -5,7 +5,7 @@ export default {
 	theme: {
 		fontFamily: {
 			defined: ["Noto Sans", "Noto Sans SC", "Noto Sans KR"],
-			mono: ["Fira Code", "Noto Serif SC"],
+			mono: ["IBM Plex Mono", "Fira Code", "Noto Serif SC"],
 			toc: ["Noto Serif SC"],
 		},
 		extend: {
@@ -29,6 +29,15 @@ export default {
 							fontSize: "0.875rem",
 							border: "1px dotted #666",
 							borderRadius: "2px",
+							padding: "0.125em 0.25em",
+							color: "#d56da1",
+							backgroundColor: "rgba(128, 128, 128, 0.1)",
+							"&::before": {
+								content: '""',
+							},
+							"&::after": {
+								content: '""',
+							},
 						},
 						kbd: {
 							"&:where([data-theme='dark'], [data-theme='dark'] *)": {
@@ -84,6 +93,9 @@ export default {
 							marginTop: "calc(var(--spacing)*4)",
 							marginBottom: "calc(var(--spacing)*4)",
 						},
+            ".expressive-code code": {
+							fontVariantLigatures: "none",
+            },
 					},
 				},
 				sm: {
