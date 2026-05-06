@@ -1,7 +1,7 @@
 ---
 import { Image } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
-import FormattedDate from "@/components/FormattedDate.astro";
+import { getFormattedDate2 } from "@/utils/date";
 
 interface Props {
   content: CollectionEntry<"post">;
@@ -12,10 +12,6 @@ const {
   content: { data },
   readingTime,
 } = Astro.props;
-
-const dateTimeOptions: Intl.DateTimeFormatOptions = {
-  month: "long",
-};
 
 function localizeReadingTime(text: string) {
   const match = text.match(/^(\d+)\s+min/);
@@ -40,7 +36,9 @@ const localizedReadingTime = localizeReadingTime(readingTime);
   {data.title}
 </h1>
 <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
-  <FormattedDate date={data.publishDate} dateTimeOptions={dateTimeOptions} />
+  <time class="text-base" datetime={data.publishDate.toISOString()}>
+    {getFormattedDate2(data.publishDate)}
+  </time>
   <div class="inline text-base">/</div>
   <div class="inline text-base">
     {localizedReadingTime}
@@ -49,11 +47,9 @@ const localizedReadingTime = localizeReadingTime(readingTime);
     data.updatedDate && (
       <span class="bg-quote/5 text-quote rounded-lg px-2 py-1 text-base font-normal">
         <div class="inline text-base">最后更新：</div>
-        <FormattedDate
-          class="ms-1"
-          date={data.updatedDate}
-          dateTimeOptions={dateTimeOptions}
-        />
+        <time class="text-base ms-1" datetime={data.updatedDate.toISOString()}>
+          {getFormattedDate2(data.updatedDate)}
+        </time>
       </span>
     )
   }
