@@ -2,6 +2,7 @@
 title: "基于 Netty 实现 Redis 服务"
 description: "基于 Netty 模拟实现 Redis 服务的各种功能。"
 publishDate: "2026-05-08 20:01+0800"
+updateDate: "2026-05-10 19:01+0800"
 tags: ["java", "netty", "redis", "practice"]
 draft: false
 ---
@@ -92,6 +93,15 @@ draft: false
 
             BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
             while (true) {
+                // 等待前面的命令完成
+                if (responseLatch != null) {
+                    responseLatch.await();
+                    // 清空在这期间用户敲击键盘产生的缓冲字符
+                    while (in.ready()) {
+                        in.read();
+                    }
+                }
+
                 String line = in.readLine();
                 if (line == null || "quit".equalsIgnoreCase(line)) {
                     break;
@@ -109,6 +119,10 @@ draft: false
                     ));
                 }
                 RedisMessage request = new ArrayRedisMessage(children);
+
+                // 在发送命令前，创建一个 CountDownLatch
+                responseLatch = new CountDownLatch(1);
+
                 channel.writeAndFlush(request);
             }
 
